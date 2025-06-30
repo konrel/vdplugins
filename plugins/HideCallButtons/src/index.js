@@ -1,13 +1,11 @@
-import { find, findByName, findByProps } from "@vendetta/metro"
-import { after } from "@vendetta/patcher"
-import { getAssetIDByName } from "@vendetta/ui/assets";
-import { findInReactTree } from "@vendetta/utils";
-import { storage } from "@vendetta/plugin";
-import Settings from "./settings";
-import { components } from "@vendetta/ui";
-let patches = []
+const { find, findByName, findByProps } = globalThis.vendetta.metro;
+const { after } = globalThis.vendetta.patcher;
+const { getAssetIDByName } = globalThis.vendetta.ui.assets;
+const { storage } = globalThis.vendetta.plugin;
 
-export default {
+let patches = [];
+
+exports.default = {
     onLoad: () => {
         storage.upHideVoiceButton ??= true;
         storage.upHideVideoButton ??= true;
@@ -15,127 +13,86 @@ export default {
         storage.dmHideVideoButton ??= false;
         storage.hideVCVideoButton ??= false;
 
-        let videoCallAsset = getAssetIDByName("ic_video");
-        let voiceCallAsset = getAssetIDByName("ic_audio");
-        const videoAsset = getAssetIDByName("video");
-        const callAsset = getAssetIDByName("nav_header_connect");
-        const videoAsset2 = getAssetIDByName("VideoIcon");
-        const callAsset2 = getAssetIDByName("PhoneCallIcon");
-
-        if(videoCallAsset === undefined)
-            videoCallAsset = videoAsset2;
-        if(voiceCallAsset === undefined)
-            voiceCallAsset = callAsset2;
+        const voiceIcon = getAssetIDByName("ic_audio") ?? getAssetIDByName("PhoneCallIcon");
+        const videoIcon = getAssetIDByName("ic_video") ?? getAssetIDByName("VideoIcon");
+        const vcCallIcon = getAssetIDByName("nav_header_connect");
+        const vcVideoIcon = getAssetIDByName("video");
 
         const UserProfileActions = findByName("UserProfileActions", false);
         const SimplifiedUserProfileContactButtons = findByName("SimplifiedUserProfileContactButtons", false);
-        const PrivateChannelButtons = find(x => x?.type?.name == "PrivateChannelButtons");
+        const PrivateChannelButtons = find(x => x?.type?.name === "PrivateChannelButtons");
         const ChannelButtons = findByProps("ChannelButtons");
         const VideoButton = findByProps("VideoButton");
-        
-        // User Profile
-        patches.push(after("default", UserProfileActions, (_, component) => {
-            if(!storage.upHideVideoButton && !storage.upHideVoiceButton) return;
 
-            let buttons = component?.props?.children?.props?.children[1]?.props?.children;
-            if(buttons === undefined)
-                buttons = component?.props?.children[1]?.props?.children;
-            if(buttons?.props?.children !== undefined)
-                buttons = buttons?.props?.children;
-            if(buttons === undefined) return;
+        if (UserProfileActions) {
+            patches.push(after("default", UserProfileActions, (_, comp) => {
+                let buttons = comp?.props?.children?.props?.children?.[1]?.props?.children
+                           ?? comp?.props?.children?.[1]?.props?.children;
 
-            for(var idx in buttons)
-            {
-                var button = buttons[idx];
-                if(button?.props?.children !== undefined)
-                {
-                    var buttonContainer = button?.props?.children;
-                    for(var idx2 in buttonContainer)
-                    {
-                        var btn = buttonContainer[idx2];
-                        if((btn?.props?.icon === voiceCallAsset && storage.upHideVoiceButton) || 
-                        (btn?.props?.icon === videoCallAsset && storage.upHideVideoButton))
-                            delete buttonContainer[idx2];
-                    }
-                }
-                if(button?.props?.IconComponent !== undefined)
-                {
-                    if(storage.upHideVoiceButton)
-                        delete buttons[1];
-                    if(storage.upHideVideoButton)
-                        delete buttons[2];
-                }
-                if((button?.props?.icon === voiceCallAsset && storage.upHideVoiceButton) || 
-                    (button?.props?.icon === videoCallAsset && storage.upHideVideoButton))
-                    delete buttons[idx];
-            }
-        }));
+                if (buttons?.props?.children) buttons = buttons.props.children;
+                if (!Array.isArray(buttons)) return;
 
-        // Simplified user profile
-        patches.push(after("default", SimplifiedUserProfileContactButtons, (_, component) => {
-            let buttons = component?.props?.children;
-            if(buttons === undefined) return;
+                comp.props.children.props.children[1].props.children = buttons.filter(btn =>
+                    !(btn?.props?.icon === voiceIcon && storage.upHideVoiceButton) &&
+                    !(btn?.props?.icon === videoIcon && storage.upHideVideoButton)
+                );
+            }));
+        }
 
-            if(storage.upHideVoiceButton)
-                delete buttons[1]
+        if (SimplifiedUserProfileContactButtons) {
+            patches.push(after("default", SimplifiedUserProfileContactButtons, (_, comp) => {
+                if (!Array.isArray(comp?.props?.children)) return;
+                const filtered = comp.props.children.filter((_, i) => {
+                    if (i === 1 && storage.upHideVoiceButton) return false;
+                    if (i === 2 && storage.upHideVideoButton) return false;
+                    return true;
+                });
+                comp.props.children = filtered;
+            }));
+        }
 
-            if(storage.upHideVideoButton)
-                delete buttons[2]
-        }));
-        
-        // VC
-        patches.push(after("default", VideoButton, (_, component) => {
-            if(!storage.hideVCVideoButton) return;
+        if (VideoButton) {
+            patches.push(after("default", VideoButton, (_, comp) => {
+                const buttons = comp?.props?.children?.props?.children?.props?.children;
+                if (!Array.isArray(buttons) || !storage.hideVCVideoButton) return;
+                comp.props.children.props.children.props.children = buttons.filter(btn =>
+                    btn?.props?.icon !== vcVideoIcon
+                );
+            }));
+        }
 
-            const buttons = component?.props?.children?.props?.children?.props?.children;
-            if(buttons === undefined) return;
+        if (PrivateChannelButtons) {
+            patches.push(after("type", PrivateChannelButtons, (_, comp) => {
+                let buttons = comp?.props?.children;
+                if (!buttons) return;
+                if (!Array.isArray(buttons)) buttons = buttons[0]?.props?.children;
+                if (!Array.isArray(buttons)) return;
 
-            delete buttons[0];
-        }));
+                comp.props.children = buttons.filter(btn =>
+                    !(btn?.props?.source === vcCallIcon && storage.dmHideCallButton) &&
+                    !(btn?.props?.source === vcVideoIcon && storage.dmHideVideoButton) &&
+                    !(btn?.props?.source === voiceIcon && storage.dmHideCallButton) &&
+                    !(btn?.props?.source === videoIcon && storage.dmHideVideoButton)
+                );
+            }));
+        }
 
-        // Tabs V2 DM Header
-        patches.push(after("type", PrivateChannelButtons, (_, component) => {
-            if(!storage.dmHideCallButton && !storage.dmHideVideoButton) return;
-
-            let buttons = component?.props?.children;
-            if(buttons === undefined) return;
-
-            if(buttons[0]?.props?.source === undefined)
-                buttons = buttons[0]?.props?.children;
-
-            if(buttons === undefined) return;
-            
-            for(var idx in buttons)
-            {
-                var button = buttons[idx];
-                if((button?.props?.source === callAsset && storage.dmHideCallButton) || 
-                    (button?.props?.source === videoAsset && storage.dmHideVideoButton) ||
-                    (button?.props?.source === callAsset2 && storage.dmHideCallButton) || 
-                    (button?.props?.source === videoAsset2 && storage.dmHideVideoButton))
-                    delete buttons[idx];
-            }
-        }));
-        
-        // Legacy UI DM Header
-        patches.push(after("ChannelButtons", ChannelButtons, (_, component) => {
-            if(!storage.dmHideCallButton && !storage.dmHideVideoButton) return;
-
-            const buttons = component?.props?.children;
-            if(buttons === undefined) return;
-            
-            for(var idx in buttons)
-            {
-                var button = buttons[idx]?.props?.children[0];
-                if(button === undefined) continue;
-
-                if((button?.props?.source === callAsset && storage.dmHideCallButton) || 
-                    (button?.props?.source === videoAsset && storage.dmHideVideoButton))
-                    delete buttons[idx];
-            }
-        }));
+        if (ChannelButtons?.ChannelButtons) {
+            patches.push(after("ChannelButtons", ChannelButtons, (_, comp) => {
+                if (!Array.isArray(comp?.props?.children)) return;
+                const filtered = comp.props.children.filter(btn => {
+                    const icon = btn?.props?.children?.[0]?.props?.source;
+                    return !(
+                        (icon === vcCallIcon && storage.dmHideCallButton) ||
+                        (icon === vcVideoIcon && storage.dmHideVideoButton)
+                    );
+                });
+                comp.props.children = filtered;
+            }));
+        }
     },
+
     onUnload: () => {
-        for (const unpatch of patches) unpatch()
-    },
-    settings: Settings
-}
+        for (const unpatch of patches) unpatch();
+    }
+};
