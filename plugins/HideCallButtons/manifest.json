@@ -1,7 +1,7 @@
 {
-  "name": "Hide Call Buttons",
+  "name": "HideCallButtons",
   "description": "Hides call and video buttons across Discord",
-  "authors": [{ "name": "Konrel" }],
+  "authors": [{ "name": "konrel" }],
   "main": "src/index.ts",
   "vendetta": {
     "icon": "ic_call_ended"
