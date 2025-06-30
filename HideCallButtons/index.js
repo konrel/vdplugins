@@ -1,1 +1,72 @@
-(function(p,s,u,d,e,E,I,b){"use strict";const{FormSection:f,FormDivider:V,FormIcon:l,FormSwitchRow:B}=I.Forms;function N(){return b.useProxy(e.storage),React.createElement(E.ReactNative.ScrollView,null,React.createElement(f,{title:"User Profile",titleStyleType:"no_border"},React.createElement(B,{label:"Hide call button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_audio")}),onValueChange:function(o){e.storage.upHideVoiceButton=o},value:e.storage.upHideVoiceButton}),React.createElement(V,null),React.createElement(B,{label:"Hide video button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_video")}),onValueChange:function(o){e.storage.upHideVideoButton=o},value:e.storage.upHideVideoButton})),React.createElement(f,{title:"DMs",titleStyleType:"no_border"},React.createElement(B,{label:"Hide call button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_audio")}),onValueChange:function(o){e.storage.dmHideCallButton=o},value:e.storage.dmHideCallButton}),React.createElement(V,null),React.createElement(B,{label:"Hide video button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_video")}),onValueChange:function(o){e.storage.dmHideVideoButton=o},value:e.storage.dmHideVideoButton})),React.createElement(f,{title:"Other",titleStyleType:"no_border"},React.createElement(B,{label:"Hide video button in VC",leading:React.createElement(l,{source:d.getAssetIDByName("video")}),onValueChange:function(o){return e.storage.hideVCVideoButton=o},value:e.storage.hideVCVideoButton})))}let i=[];var _={onLoad:function(){e.storage.upHideVoiceButton??=!0,e.storage.upHideVideoButton??=!0,e.storage.dmHideCallButton??=!1,e.storage.dmHideVideoButton??=!1,e.storage.hideVCVideoButton??=!1;let o=d.getAssetIDByName("ic_video"),m=d.getAssetIDByName("ic_audio");const H=d.getAssetIDByName("video"),h=d.getAssetIDByName("nav_header_connect"),g=d.getAssetIDByName("VideoIcon"),y=d.getAssetIDByName("PhoneCallIcon");o===void 0&&(o=g),m===void 0&&(m=y);const A=s.findByName("UserProfileActions",!1),D=s.findByName("SimplifiedUserProfileContactButtons",!1),P=s.find(function(c){return c?.type?.name=="PrivateChannelButtons"}),S=s.findByProps("ChannelButtons"),F=s.findByProps("VideoButton");i.push(u.after("default",A,function(c,n){if(!e.storage.upHideVideoButton&&!e.storage.upHideVoiceButton)return;let t=n?.props?.children?.props?.children[1]?.props?.children;if(t===void 0&&(t=n?.props?.children[1]?.props?.children),t?.props?.children!==void 0&&(t=t?.props?.children),t!==void 0)for(var a in t){var r=t[a];if(r?.props?.children!==void 0){var v=r?.props?.children;for(var C in v){var R=v[C];(R?.props?.icon===m&&e.storage.upHideVoiceButton||R?.props?.icon===o&&e.storage.upHideVideoButton)&&delete v[C]}}r?.props?.IconComponent!==void 0&&(e.storage.upHideVoiceButton&&delete t[1],e.storage.upHideVideoButton&&delete t[2]),(r?.props?.icon===m&&e.storage.upHideVoiceButton||r?.props?.icon===o&&e.storage.upHideVideoButton)&&delete t[a]}})),i.push(u.after("default",D,function(c,n){let t=n?.props?.children;t!==void 0&&(e.storage.upHideVoiceButton&&delete t[1],e.storage.upHideVideoButton&&delete t[2])})),i.push(u.after("default",F,function(c,n){if(!e.storage.hideVCVideoButton)return;const t=n?.props?.children?.props?.children?.props?.children;t!==void 0&&delete t[0]})),i.push(u.after("type",P,function(c,n){if(!e.storage.dmHideCallButton&&!e.storage.dmHideVideoButton)return;let t=n?.props?.children;if(t!==void 0&&(t[0]?.props?.source===void 0&&(t=t[0]?.props?.children),t!==void 0))for(var a in t){var r=t[a];(r?.props?.source===h&&e.storage.dmHideCallButton||r?.props?.source===H&&e.storage.dmHideVideoButton||r?.props?.source===y&&e.storage.dmHideCallButton||r?.props?.source===g&&e.storage.dmHideVideoButton)&&delete t[a]}})),i.push(u.after("ChannelButtons",S,function(c,n){if(!e.storage.dmHideCallButton&&!e.storage.dmHideVideoButton)return;const t=n?.props?.children;if(t!==void 0)for(var a in t){var r=t[a]?.props?.children[0];r!==void 0&&(r?.props?.source===h&&e.storage.dmHideCallButton||r?.props?.source===H&&e.storage.dmHideVideoButton)&&delete t[a]}}))},onUnload:function(){for(const o of i)o()},settings:N};return p.default=_,Object.defineProperty(p,"__esModule",{value:!0}),p})({},vendetta.metro,vendetta.patcher,vendetta.ui.assets,vendetta.plugin,vendetta.metro.common,vendetta.ui.components,vendetta.storage);
+import { find, findByName, findByProps } from "@vendetta/metro";
+import { after } from "@vendetta/patcher";
+import { getAssetIDByName } from "@vendetta/ui/assets";
+
+let patches = [];
+
+export default {
+  onLoad() {
+    const voiceIcon = getAssetIDByName("ic_audio") ?? getAssetIDByName("PhoneCallIcon");
+    const videoIcon = getAssetIDByName("ic_video") ?? getAssetIDByName("VideoIcon");
+
+    // 1. User Profile (Modern)
+    const UserProfileActions = findByName("UserProfileActions", false);
+    if (UserProfileActions) {
+      patches.push(after("default", UserProfileActions, (_, comp) => {
+        try {
+          let buttons = comp?.props?.children?.props?.children?.[1]?.props?.children;
+          if (!Array.isArray(buttons)) return;
+
+          comp.props.children.props.children[1].props.children = buttons.filter(
+            (btn) =>
+              !(btn?.props?.icon === voiceIcon) &&
+              !(btn?.props?.icon === videoIcon)
+          );
+        } catch (e) {
+          console.warn("UserProfileActions patch failed:", e);
+        }
+      }));
+    }
+
+    // 2. Private DM Header
+    const PrivateChannelButtons = find(x => x?.type?.name === "PrivateChannelButtons");
+    if (PrivateChannelButtons) {
+      patches.push(after("type", PrivateChannelButtons, (_, comp) => {
+        try {
+          let buttons = comp?.props?.children;
+          if (!Array.isArray(buttons)) return;
+
+          comp.props.children = buttons.filter(
+            (btn) =>
+              !(btn?.props?.source === voiceIcon) &&
+              !(btn?.props?.source === videoIcon)
+          );
+        } catch (e) {
+          console.warn("PrivateChannelButtons patch failed:", e);
+        }
+      }));
+    }
+
+    // 3. Legacy DM Header
+    const ChannelButtons = findByProps("ChannelButtons");
+    if (ChannelButtons?.ChannelButtons) {
+      patches.push(after("ChannelButtons", ChannelButtons, (_, comp) => {
+        try {
+          let buttons = comp?.props?.children;
+          if (!Array.isArray(buttons)) return;
+
+          comp.props.children = buttons.filter((btn) => {
+            const icon = btn?.props?.children?.[0]?.props?.source;
+            return !(icon === voiceIcon || icon === videoIcon);
+          });
+        } catch (e) {
+          console.warn("ChannelButtons patch failed:", e);
+        }
+      }));
+    }
+  },
+
+  onUnload() {
+    for (const unpatch of patches) unpatch();
+  }
+};
