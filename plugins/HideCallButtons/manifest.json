@@ -3,7 +3,8 @@
     "description": "Hides call buttons from dms, user profiles and vcs",
     "authors": [
         {
-            "name": "konrel",
+            "name": "Konrel",
+            "id": "780819226839220265"
         }
     ],
     "main": "src/index.js",
