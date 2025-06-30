@@ -1,1 +1,131 @@
-(function(p,s,u,d,e,E,I,b){"use strict";const{FormSection:f,FormDivider:V,FormIcon:l,FormSwitchRow:B}=I.Forms;function N(){return b.useProxy(e.storage),React.createElement(E.ReactNative.ScrollView,null,React.createElement(f,{title:"User Profile",titleStyleType:"no_border"},React.createElement(B,{label:"Hide call button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_audio")}),onValueChange:function(o){e.storage.upHideVoiceButton=o},value:e.storage.upHideVoiceButton}),React.createElement(V,null),React.createElement(B,{label:"Hide video button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_video")}),onValueChange:function(o){e.storage.upHideVideoButton=o},value:e.storage.upHideVideoButton})),React.createElement(f,{title:"DMs",titleStyleType:"no_border"},React.createElement(B,{label:"Hide call button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_audio")}),onValueChange:function(o){e.storage.dmHideCallButton=o},value:e.storage.dmHideCallButton}),React.createElement(V,null),React.createElement(B,{label:"Hide video button",leading:React.createElement(l,{source:d.getAssetIDByName("ic_video")}),onValueChange:function(o){e.storage.dmHideVideoButton=o},value:e.storage.dmHideVideoButton})),React.createElement(f,{title:"Other",titleStyleType:"no_border"},React.createElement(B,{label:"Hide video button in VC",leading:React.createElement(l,{source:d.getAssetIDByName("video")}),onValueChange:function(o){return e.storage.hideVCVideoButton=o},value:e.storage.hideVCVideoButton})))}let i=[];var _={onLoad:function(){e.storage.upHideVoiceButton??=!0,e.storage.upHideVideoButton??=!0,e.storage.dmHideCallButton??=!1,e.storage.dmHideVideoButton??=!1,e.storage.hideVCVideoButton??=!1;let o=d.getAssetIDByName("ic_video"),m=d.getAssetIDByName("ic_audio");const H=d.getAssetIDByName("video"),h=d.getAssetIDByName("nav_header_connect"),g=d.getAssetIDByName("VideoIcon"),y=d.getAssetIDByName("PhoneCallIcon");o===void 0&&(o=g),m===void 0&&(m=y);const A=s.findByName("UserProfileActions",!1),D=s.findByName("SimplifiedUserProfileContactButtons",!1),P=s.find(function(c){return c?.type?.name=="PrivateChannelButtons"}),S=s.findByProps("ChannelButtons"),F=s.findByProps("VideoButton");i.push(u.after("default",A,function(c,n){if(!e.storage.upHideVideoButton&&!e.storage.upHideVoiceButton)return;let t=n?.props?.children?.props?.children[1]?.props?.children;if(t===void 0&&(t=n?.props?.children[1]?.props?.children),t?.props?.children!==void 0&&(t=t?.props?.children),t!==void 0)for(var a in t){var r=t[a];if(r?.props?.children!==void 0){var v=r?.props?.children;for(var C in v){var R=v[C];(R?.props?.icon===m&&e.storage.upHideVoiceButton||R?.props?.icon===o&&e.storage.upHideVideoButton)&&delete v[C]}}r?.props?.IconComponent!==void 0&&(e.storage.upHideVoiceButton&&delete t[1],e.storage.upHideVideoButton&&delete t[2]),(r?.props?.icon===m&&e.storage.upHideVoiceButton||r?.props?.icon===o&&e.storage.upHideVideoButton)&&delete t[a]}})),i.push(u.after("default",D,function(c,n){let t=n?.props?.children;t!==void 0&&(e.storage.upHideVoiceButton&&delete t[1],e.storage.upHideVideoButton&&delete t[2])})),i.push(u.after("default",F,function(c,n){if(!e.storage.hideVCVideoButton)return;const t=n?.props?.children?.props?.children?.props?.children;t!==void 0&&delete t[0]})),i.push(u.after("type",P,function(c,n){if(!e.storage.dmHideCallButton&&!e.storage.dmHideVideoButton)return;let t=n?.props?.children;if(t!==void 0&&(t[0]?.props?.source===void 0&&(t=t[0]?.props?.children),t!==void 0))for(var a in t){var r=t[a];(r?.props?.source===h&&e.storage.dmHideCallButton||r?.props?.source===H&&e.storage.dmHideVideoButton||r?.props?.source===y&&e.storage.dmHideCallButton||r?.props?.source===g&&e.storage.dmHideVideoButton)&&delete t[a]}})),i.push(u.after("ChannelButtons",S,function(c,n){if(!e.storage.dmHideCallButton&&!e.storage.dmHideVideoButton)return;const t=n?.props?.children;if(t!==void 0)for(var a in t){var r=t[a]?.props?.children[0];r!==void 0&&(r?.props?.source===h&&e.storage.dmHideCallButton||r?.props?.source===H&&e.storage.dmHideVideoButton)&&delete t[a]}}))},onUnload:function(){for(const o of i)o()},settings:N};return p.default=_,Object.defineProperty(p,"__esModule",{value:!0}),p})({},vendetta.metro,vendetta.patcher,vendetta.ui.assets,vendetta.plugin,vendetta.metro.common,vendetta.ui.components,vendetta.storage);
+const { find, findByName, findByProps } = globalThis.vendetta.metro;
+const { after } = globalThis.vendetta.patcher;
+const { getAssetIDByName } = globalThis.vendetta.ui.assets;
+const { findInReactTree } = globalThis.vendetta.utils;
+const { storage } = globalThis.vendetta.plugin;
+
+let patches = [];
+
+exports.default = {
+    onLoad: () => {
+        storage.upHideVoiceButton ??= true;
+        storage.upHideVideoButton ??= true;
+        storage.dmHideCallButton ??= false;
+        storage.dmHideVideoButton ??= false;
+        storage.hideVCVideoButton ??= false;
+
+        let videoCallAsset = getAssetIDByName("ic_video") ?? getAssetIDByName("VideoIcon");
+        let voiceCallAsset = getAssetIDByName("ic_audio") ?? getAssetIDByName("PhoneCallIcon");
+        const videoAsset = getAssetIDByName("video");
+        const callAsset = getAssetIDByName("nav_header_connect");
+
+        const UserProfileActions = findByName("UserProfileActions", false);
+        const SimplifiedUserProfileContactButtons = findByName("SimplifiedUserProfileContactButtons", false);
+        const PrivateChannelButtons = find(x => x?.type?.name == "PrivateChannelButtons");
+        const ChannelButtons = findByProps("ChannelButtons");
+        const VideoButton = findByProps("VideoButton");
+
+        // User Profile
+        patches.push(after("default", UserProfileActions, (_, component) => {
+            if (!storage.upHideVideoButton && !storage.upHideVoiceButton) return;
+
+            let buttons = component?.props?.children?.props?.children?.[1]?.props?.children
+                      ?? component?.props?.children?.[1]?.props?.children;
+
+            if (buttons?.props?.children !== undefined)
+                buttons = buttons?.props?.children;
+
+            if (!buttons) return;
+
+            for (const idx in buttons) {
+                const button = buttons[idx];
+                if (button?.props?.children) {
+                    const buttonContainer = button.props.children;
+                    for (const idx2 in buttonContainer) {
+                        const btn = buttonContainer[idx2];
+                        if (
+                            (btn?.props?.icon === voiceCallAsset && storage.upHideVoiceButton) ||
+                            (btn?.props?.icon === videoCallAsset && storage.upHideVideoButton)
+                        ) {
+                            delete buttonContainer[idx2];
+                        }
+                    }
+                }
+                if (button?.props?.IconComponent) {
+                    if (storage.upHideVoiceButton) delete buttons[1];
+                    if (storage.upHideVideoButton) delete buttons[2];
+                }
+                if (
+                    (button?.props?.icon === voiceCallAsset && storage.upHideVoiceButton) ||
+                    (button?.props?.icon === videoCallAsset && storage.upHideVideoButton)
+                ) {
+                    delete buttons[idx];
+                }
+            }
+        }));
+
+        // Simplified user profile
+        patches.push(after("default", SimplifiedUserProfileContactButtons, (_, component) => {
+            const buttons = component?.props?.children;
+            if (!buttons) return;
+            if (storage.upHideVoiceButton) delete buttons[1];
+            if (storage.upHideVideoButton) delete buttons[2];
+        }));
+
+        // VC
+        patches.push(after("default", VideoButton, (_, component) => {
+            if (!storage.hideVCVideoButton) return;
+            const buttons = component?.props?.children?.props?.children?.props?.children;
+            if (!buttons) return;
+            delete buttons[0];
+        }));
+
+        // Tabs V2 DM Header
+        patches.push(after("type", PrivateChannelButtons, (_, component) => {
+            if (!storage.dmHideCallButton && !storage.dmHideVideoButton) return;
+
+            let buttons = component?.props?.children;
+            if (!buttons) return;
+            if (buttons[0]?.props?.source === undefined)
+                buttons = buttons[0]?.props?.children;
+            if (!buttons) return;
+
+            for (const idx in buttons) {
+                const button = buttons[idx];
+                const source = button?.props?.source;
+                if (
+                    (source === callAsset && storage.dmHideCallButton) ||
+                    (source === videoAsset && storage.dmHideVideoButton) ||
+                    (source === voiceCallAsset && storage.dmHideCallButton) ||
+                    (source === videoCallAsset && storage.dmHideVideoButton)
+                ) {
+                    delete buttons[idx];
+                }
+            }
+        }));
+
+        // Legacy UI DM Header
+        patches.push(after("ChannelButtons", ChannelButtons, (_, component) => {
+            if (!storage.dmHideCallButton && !storage.dmHideVideoButton) return;
+
+            const buttons = component?.props?.children;
+            if (!buttons) return;
+
+            for (const idx in buttons) {
+                const button = buttons[idx]?.props?.children?.[0];
+                if (!button) continue;
+                const source = button?.props?.source;
+                if (
+                    (source === callAsset && storage.dmHideCallButton) ||
+                    (source === videoAsset && storage.dmHideVideoButton)
+                ) {
+                    delete buttons[idx];
+                }
+            }
+        }));
+    },
+
+    onUnload: () => {
+        for (const unpatch of patches) unpatch();
+    }
+};
