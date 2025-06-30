@@ -1,1 +1,1 @@
-{"name":"Hide call buttons","description":"Hides call buttons from dms, user profiles and vcs","authors":[{"name":"Konrel4","id":"780819226839220265"}],"main":"index.js","vendetta":{"icon":"ic_call_ended"},"hash":"8a49d0c00dea68bf1783e80e66223329f1d202521d5c64042d2d32fe09608d24"}
+{"name":"NoCall","description":"Disables call buttons.","authors":[{"name":"konrel","id":"257109471589957632"}],"main":"index.js","vendetta":{"icon":"ic_call_ended"},"hash":"b38277f77ad2985b5d3e60803165335a866a1f810f0fed15fb45352e0db2c26b"}
