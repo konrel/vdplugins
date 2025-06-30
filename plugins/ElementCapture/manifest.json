@@ -1,9 +1,0 @@
-{
-  "name": "HideElement",
-  "description": "Log elements by tapping",
-  "authors": [{ "name": "konrel" }],
-  "main": "src/index.ts",
-  "vendetta": {
-    "icon": "ic_call_ended"
-  }
-}
