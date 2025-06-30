@@ -1,19 +1,27 @@
-import { findByProps } from "@vendetta/metro";
-import { after } from "@vendetta/patcher";
-import { getAssetIDByName } from "@vendetta/ui/assets";
+import { find, findByProps } from "@vendetta/metro";
+import { before } from "@vendetta/patcher";
 
-export default () => {
-    const VideoButton = findByProps("VideoButton");
-    const vcVideoIcon = getAssetIDByName("video");
+let unpatch: () => void;
 
-    if (!VideoButton) return;
+export const onLoad = () => {
+  const vcButtons = find((x) =>
+    typeof x?.default === "function" &&
+    x.default.toString().includes("Start Voice Call")
+  );
 
-    return after("default", VideoButton, (_, comp) => {
-        const buttonList = comp?.props?.children?.props?.children?.props?.children;
-        if (!Array.isArray(buttonList)) return;
+  if (!vcButtons) return;
 
-        comp.props.children.props.children.props.children = buttonList.filter(
-            (btn: any) => btn?.props?.icon !== vcVideoIcon
-        );
-    });
+  unpatch = before("default", vcButtons, (args) => {
+    if (args[0]?.children) {
+      args[0].children = args[0].children.filter?.(
+        (c) =>
+          !c?.props?.["aria-label"]?.toLowerCase?.().includes("call") &&
+          !c?.props?.tooltip?.toLowerCase?.().includes("call")
+      );
+    }
+  });
+};
+
+export const onUnload = () => {
+  unpatch?.();
 };

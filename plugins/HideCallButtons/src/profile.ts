@@ -1,29 +1,27 @@
-import { findByName } from "@vendetta/metro";
-import { after } from "@vendetta/patcher";
-import { getAssetIDByName } from "@vendetta/ui/assets";
+import { find } from "@vendetta/metro";
+import { before } from "@vendetta/patcher";
 
-export default () => {
-    const UserProfileActions = findByName("UserProfileActions", false);
-    const voiceIcon = getAssetIDByName("ic_audio") ?? getAssetIDByName("PhoneCallIcon");
-    const videoIcon = getAssetIDByName("ic_video") ?? getAssetIDByName("VideoIcon");
+let unpatch: () => void;
 
-    if (!UserProfileActions) return;
+export const onLoad = () => {
+  const profileActions = find((x) =>
+    typeof x?.default === "function" &&
+    x.default.toString().includes("Start Voice Call")
+  );
+  if (!profileActions) return;
 
-    return after("default", UserProfileActions, (_, comp) => {
-        let buttons = comp?.props?.children?.props?.children?.[1]?.props?.children;
-        if (buttons?.props?.children) buttons = buttons.props.children;
-        if (!Array.isArray(buttons)) return;
+  unpatch = before("default", profileActions, (args) => {
+    const props = args[0];
+    if (props?.children) {
+      props.children = props.children.filter?.(
+        (c) =>
+          !c?.props?.["aria-label"]?.toLowerCase?.().includes("call") &&
+          !c?.props?.tooltip?.toLowerCase?.().includes("call")
+      );
+    }
+  });
+};
 
-        const filtered = buttons.filter(
-            (btn: any) =>
-                btn?.props?.icon !== voiceIcon &&
-                btn?.props?.icon !== videoIcon
-        );
-
-        if (Array.isArray(comp?.props?.children?.props?.children?.[1]?.props?.children?.props?.children)) {
-            comp.props.children.props.children[1].props.children.props.children = filtered;
-        } else {
-            comp.props.children.props.children[1].props.children = filtered;
-        }
-    });
+export const onUnload = () => {
+  unpatch?.();
 };

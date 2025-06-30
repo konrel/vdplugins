@@ -1,27 +1,24 @@
 import { find } from "@vendetta/metro";
-import { after } from "@vendetta/patcher";
-import { getAssetIDByName } from "@vendetta/ui/assets";
+import { before } from "@vendetta/patcher";
 
-export default () => {
-    const PrivateChannelButtons = find((x) => x?.type?.name === "PrivateChannelButtons");
-    const vcCallIcon = getAssetIDByName("nav_header_connect");
-    const vcVideoIcon = getAssetIDByName("video");
-    const voiceIcon = getAssetIDByName("ic_audio") ?? getAssetIDByName("PhoneCallIcon");
-    const videoIcon = getAssetIDByName("ic_video") ?? getAssetIDByName("VideoIcon");
+let unpatch: () => void;
 
-    if (!PrivateChannelButtons) return;
+export const onLoad = () => {
+  const dmHeader = find((m) =>
+    m?.default?.toString().includes("Start Video Call")
+  );
+  if (!dmHeader) return;
 
-    return after("type", PrivateChannelButtons, (_, comp) => {
-        let buttons = comp?.props?.children;
-        if (!Array.isArray(buttons)) buttons = buttons?.[0]?.props?.children;
-        if (!Array.isArray(buttons)) return;
+  unpatch = before("default", dmHeader, (args) => {
+    const props = args[0];
+    if (props?.children?.props?.children) {
+      props.children.props.children = props.children.props.children.filter(
+        (c) => !c?.props?.["aria-label"]?.toLowerCase?.().includes("call")
+      );
+    }
+  });
+};
 
-        comp.props.children = buttons.filter(
-            (btn: any) =>
-                btn?.props?.source !== vcCallIcon &&
-                btn?.props?.source !== vcVideoIcon &&
-                btn?.props?.source !== voiceIcon &&
-                btn?.props?.source !== videoIcon
-        );
-    });
+export const onUnload = () => {
+  unpatch?.();
 };

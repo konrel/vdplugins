@@ -1,16 +1,15 @@
-import patchProfile from "./profile";
-import patchDM from "./dm";
-import patchVC from "./vc";
-
-const patches: Array<() => void> = [];
+import { onLoad as patchVC, onUnload as unpatchVC } from "./vc";
+import { onLoad as patchDM, onUnload as unpatchDM } from "./dm";
+import { onLoad as patchProfile, onUnload as unpatchProfile } from "./profile";
 
 export const onLoad = () => {
-    for (const patch of [patchProfile, patchDM, patchVC]) {
-        const result = patch();
-        if (result) patches.push(result);
-    }
+  patchVC();
+  patchDM();
+  patchProfile();
 };
 
 export const onUnload = () => {
-    for (const unpatch of patches) unpatch();
+  unpatchVC();
+  unpatchDM();
+  unpatchProfile();
 };
