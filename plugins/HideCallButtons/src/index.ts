@@ -1,5 +1,6 @@
 import { after } from "@vendetta/patcher";
 import { getAssetIDByName } from "@vendetta/ui/assets";
+import { showToast } from "@vendetta/ui/toasts";
 import { find, findByName, findByProps } from "@vendetta/metro";
 import { storage } from "@vendetta/plugin";
 
@@ -7,7 +8,7 @@ let patches: (() => void)[] = [];
 
 export default {
   onLoad() {
-    console.log("🔥 HideCallButtons plugin loaded");
+    showToast("🔥 HideCallButtons plugin loaded", getAssetIDByName("ic_message"));
 
     storage.upHideVoiceButton ??= true;
     storage.upHideVideoButton ??= true;
@@ -20,12 +21,11 @@ export default {
     const videoAsset = getAssetIDByName("video");
     const callAsset = getAssetIDByName("nav_header_connect");
 
-    console.log("📦 Asset IDs:", {
-      videoCallAsset,
-      voiceCallAsset,
-      videoAsset,
-      callAsset
-    });
+    const show = (msg: string) =>
+      showToast(`🔧 ${msg}`, getAssetIDByName("ic_settings"));
+
+    if (!videoCallAsset || !voiceCallAsset || !videoAsset || !callAsset)
+      showToast("⚠️ Asset ID missing", getAssetIDByName("Small"));
 
     const UserProfileActions = findByName("UserProfileActions", false);
     const SimplifiedUserProfileContactButtons = findByName("SimplifiedUserProfileContactButtons", false);
@@ -35,7 +35,7 @@ export default {
 
     // Patch: User Profile
     patches.push(after("default", UserProfileActions, (_, comp) => {
-      console.log("🧩 Patch triggered: UserProfileActions", comp);
+      show("Patch: UserProfileActions");
 
       if (!storage.upHideVideoButton && !storage.upHideVoiceButton) return;
 
@@ -65,7 +65,7 @@ export default {
 
     // Patch: Simplified User Profile
     patches.push(after("default", SimplifiedUserProfileContactButtons, (_, comp) => {
-      console.log("🧩 Patch triggered: SimplifiedUserProfileContactButtons", comp);
+      show("Patch: SimplifiedUserProfileContactButtons");
 
       const buttons = comp?.props?.children;
       if (!buttons) return;
@@ -76,7 +76,7 @@ export default {
 
     // Patch: Video Call (VC)
     patches.push(after("default", VideoButton, (_, comp) => {
-      console.log("🧩 Patch triggered: VideoButton", comp);
+      show("Patch: VideoButton");
 
       if (!storage.hideVCVideoButton) return;
 
@@ -86,7 +86,7 @@ export default {
 
     // Patch: DM Header (Tabs V2)
     patches.push(after("type", PrivateChannelButtons, (_, comp) => {
-      console.log("🧩 Patch triggered: PrivateChannelButtons", comp);
+      show("Patch: PrivateChannelButtons");
 
       let buttons = comp?.props?.children;
       if (!buttons) return;
@@ -106,7 +106,7 @@ export default {
 
     // Patch: DM Header (Legacy UI)
     patches.push(after("ChannelButtons", ChannelButtons, (_, comp) => {
-      console.log("🧩 Patch triggered: ChannelButtons", comp);
+      show("Patch: ChannelButtons");
 
       const buttons = comp?.props?.children;
       if (!buttons) return;
