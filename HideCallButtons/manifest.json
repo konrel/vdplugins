@@ -1,9 +1,7 @@
 {
-  "name": "Hide call buttons",
-  "description": "Hides call buttons from DMs, user profiles and VCs",
-  "authors": [{ "name": "Jon", "id": "780819226839220265" }],
-  "main": "index.js",
-  "vendetta": {
-    "icon": "ic_call_ended"
-  }
+  "name": "Hide Call Buttons",
+  "description": "Automatically hides voice and video call buttons across Discord.",
+  "authors": "Jon",
+  "version": "284.14",
+  "main": "index.js"
 }
