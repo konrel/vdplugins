@@ -20,98 +20,103 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
-  onLoad: () => onLoad,
-  onUnload: () => onUnload
+  onLoad: () => onLoad4,
+  onUnload: () => onUnload4
 });
 module.exports = __toCommonJS(index_exports);
 
-// src/profile.ts
+// src/vc.ts
 var import_metro = require("@vendetta/metro");
 var import_patcher = require("@vendetta/patcher");
-var import_assets = require("@vendetta/ui/assets");
-var profile_default = () => {
-  const UserProfileActions = (0, import_metro.findByName)("UserProfileActions", false);
-  const voiceIcon = (0, import_assets.getAssetIDByName)("ic_audio") ?? (0, import_assets.getAssetIDByName)("PhoneCallIcon");
-  const videoIcon = (0, import_assets.getAssetIDByName)("ic_video") ?? (0, import_assets.getAssetIDByName)("VideoIcon");
-  if (!UserProfileActions) return;
-  return (0, import_patcher.after)("default", UserProfileActions, (_, comp) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
-    let buttons = (_f = (_e = (_d = (_c = (_b = (_a = comp == null ? void 0 : comp.props) == null ? void 0 : _a.children) == null ? void 0 : _b.props) == null ? void 0 : _c.children) == null ? void 0 : _d[1]) == null ? void 0 : _e.props) == null ? void 0 : _f.children;
-    if ((_g = buttons == null ? void 0 : buttons.props) == null ? void 0 : _g.children) buttons = buttons.props.children;
-    if (!Array.isArray(buttons)) return;
-    const filtered = buttons.filter(
-      (btn) => {
-        var _a2, _b2;
-        return ((_a2 = btn == null ? void 0 : btn.props) == null ? void 0 : _a2.icon) !== voiceIcon && ((_b2 = btn == null ? void 0 : btn.props) == null ? void 0 : _b2.icon) !== videoIcon;
-      }
-    );
-    if (Array.isArray((_o = (_n = (_m = (_l = (_k = (_j = (_i = (_h = comp == null ? void 0 : comp.props) == null ? void 0 : _h.children) == null ? void 0 : _i.props) == null ? void 0 : _j.children) == null ? void 0 : _k[1]) == null ? void 0 : _l.props) == null ? void 0 : _m.children) == null ? void 0 : _n.props) == null ? void 0 : _o.children)) {
-      comp.props.children.props.children[1].props.children.props.children = filtered;
-    } else {
-      comp.props.children.props.children[1].props.children = filtered;
+var unpatch;
+var onLoad = () => {
+  const vcButtons = (0, import_metro.find)(
+    (x) => typeof (x == null ? void 0 : x.default) === "function" && x.default.toString().includes("Start Voice Call")
+  );
+  if (!vcButtons) return;
+  unpatch = (0, import_patcher.before)("default", vcButtons, (args) => {
+    var _a, _b, _c;
+    if ((_a = args[0]) == null ? void 0 : _a.children) {
+      args[0].children = (_c = (_b = args[0].children).filter) == null ? void 0 : _c.call(
+        _b,
+        (c) => {
+          var _a2, _b2, _c2, _d, _e, _f;
+          return !((_c2 = (_b2 = (_a2 = c == null ? void 0 : c.props) == null ? void 0 : _a2["aria-label"]) == null ? void 0 : _b2.toLowerCase) == null ? void 0 : _c2.call(_b2).includes("call")) && !((_f = (_e = (_d = c == null ? void 0 : c.props) == null ? void 0 : _d.tooltip) == null ? void 0 : _e.toLowerCase) == null ? void 0 : _f.call(_e).includes("call"));
+        }
+      );
     }
   });
+};
+var onUnload = () => {
+  unpatch == null ? void 0 : unpatch();
 };
 
 // src/dm.ts
 var import_metro2 = require("@vendetta/metro");
 var import_patcher2 = require("@vendetta/patcher");
-var import_assets2 = require("@vendetta/ui/assets");
-var dm_default = () => {
-  const PrivateChannelButtons = (0, import_metro2.find)((x) => {
-    var _a;
-    return ((_a = x == null ? void 0 : x.type) == null ? void 0 : _a.name) === "PrivateChannelButtons";
-  });
-  const vcCallIcon = (0, import_assets2.getAssetIDByName)("nav_header_connect");
-  const vcVideoIcon = (0, import_assets2.getAssetIDByName)("video");
-  const voiceIcon = (0, import_assets2.getAssetIDByName)("ic_audio") ?? (0, import_assets2.getAssetIDByName)("PhoneCallIcon");
-  const videoIcon = (0, import_assets2.getAssetIDByName)("ic_video") ?? (0, import_assets2.getAssetIDByName)("VideoIcon");
-  if (!PrivateChannelButtons) return;
-  return (0, import_patcher2.after)("type", PrivateChannelButtons, (_, comp) => {
-    var _a, _b, _c;
-    let buttons = (_a = comp == null ? void 0 : comp.props) == null ? void 0 : _a.children;
-    if (!Array.isArray(buttons)) buttons = (_c = (_b = buttons == null ? void 0 : buttons[0]) == null ? void 0 : _b.props) == null ? void 0 : _c.children;
-    if (!Array.isArray(buttons)) return;
-    comp.props.children = buttons.filter(
-      (btn) => {
-        var _a2, _b2, _c2, _d;
-        return ((_a2 = btn == null ? void 0 : btn.props) == null ? void 0 : _a2.source) !== vcCallIcon && ((_b2 = btn == null ? void 0 : btn.props) == null ? void 0 : _b2.source) !== vcVideoIcon && ((_c2 = btn == null ? void 0 : btn.props) == null ? void 0 : _c2.source) !== voiceIcon && ((_d = btn == null ? void 0 : btn.props) == null ? void 0 : _d.source) !== videoIcon;
-      }
-    );
+var unpatch2;
+var onLoad2 = () => {
+  const dmHeader = (0, import_metro2.find)(
+    (m) => {
+      var _a;
+      return (_a = m == null ? void 0 : m.default) == null ? void 0 : _a.toString().includes("Start Video Call");
+    }
+  );
+  if (!dmHeader) return;
+  unpatch2 = (0, import_patcher2.before)("default", dmHeader, (args) => {
+    var _a, _b;
+    const props = args[0];
+    if ((_b = (_a = props == null ? void 0 : props.children) == null ? void 0 : _a.props) == null ? void 0 : _b.children) {
+      props.children.props.children = props.children.props.children.filter(
+        (c) => {
+          var _a2, _b2, _c;
+          return !((_c = (_b2 = (_a2 = c == null ? void 0 : c.props) == null ? void 0 : _a2["aria-label"]) == null ? void 0 : _b2.toLowerCase) == null ? void 0 : _c.call(_b2).includes("call"));
+        }
+      );
+    }
   });
 };
+var onUnload2 = () => {
+  unpatch2 == null ? void 0 : unpatch2();
+};
 
-// src/vc.ts
+// src/profile.ts
 var import_metro3 = require("@vendetta/metro");
 var import_patcher3 = require("@vendetta/patcher");
-var import_assets3 = require("@vendetta/ui/assets");
-var vc_default = () => {
-  const VideoButton = (0, import_metro3.findByProps)("VideoButton");
-  const vcVideoIcon = (0, import_assets3.getAssetIDByName)("video");
-  if (!VideoButton) return;
-  return (0, import_patcher3.after)("default", VideoButton, (_, comp) => {
-    var _a, _b, _c, _d, _e;
-    const buttonList = (_e = (_d = (_c = (_b = (_a = comp == null ? void 0 : comp.props) == null ? void 0 : _a.children) == null ? void 0 : _b.props) == null ? void 0 : _c.children) == null ? void 0 : _d.props) == null ? void 0 : _e.children;
-    if (!Array.isArray(buttonList)) return;
-    comp.props.children.props.children.props.children = buttonList.filter(
-      (btn) => {
-        var _a2;
-        return ((_a2 = btn == null ? void 0 : btn.props) == null ? void 0 : _a2.icon) !== vcVideoIcon;
-      }
-    );
+var unpatch3;
+var onLoad3 = () => {
+  const profileActions = (0, import_metro3.find)(
+    (x) => typeof (x == null ? void 0 : x.default) === "function" && x.default.toString().includes("Start Voice Call")
+  );
+  if (!profileActions) return;
+  unpatch3 = (0, import_patcher3.before)("default", profileActions, (args) => {
+    var _a, _b;
+    const props = args[0];
+    if (props == null ? void 0 : props.children) {
+      props.children = (_b = (_a = props.children).filter) == null ? void 0 : _b.call(
+        _a,
+        (c) => {
+          var _a2, _b2, _c, _d, _e, _f;
+          return !((_c = (_b2 = (_a2 = c == null ? void 0 : c.props) == null ? void 0 : _a2["aria-label"]) == null ? void 0 : _b2.toLowerCase) == null ? void 0 : _c.call(_b2).includes("call")) && !((_f = (_e = (_d = c == null ? void 0 : c.props) == null ? void 0 : _d.tooltip) == null ? void 0 : _e.toLowerCase) == null ? void 0 : _f.call(_e).includes("call"));
+        }
+      );
+    }
   });
+};
+var onUnload3 = () => {
+  unpatch3 == null ? void 0 : unpatch3();
 };
 
 // src/index.ts
-var patches = [];
-var onLoad = () => {
-  for (const patch of [profile_default, dm_default, vc_default]) {
-    const result = patch();
-    if (result) patches.push(result);
-  }
+var onLoad4 = () => {
+  onLoad();
+  onLoad2();
+  onLoad3();
 };
-var onUnload = () => {
-  for (const unpatch of patches) unpatch();
+var onUnload4 = () => {
+  onUnload();
+  onUnload2();
+  onUnload3();
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
