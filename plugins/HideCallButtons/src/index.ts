@@ -7,18 +7,25 @@ let patches: (() => void)[] = [];
 
 export default {
   onLoad() {
-    // Default toggle values
+    console.log("🔥 HideCallButtons plugin loaded");
+
     storage.upHideVoiceButton ??= true;
     storage.upHideVideoButton ??= true;
     storage.dmHideCallButton ??= false;
     storage.dmHideVideoButton ??= false;
     storage.hideVCVideoButton ??= false;
 
-    // Fallback asset handling
     let videoCallAsset = getAssetIDByName("ic_video") ?? getAssetIDByName("VideoIcon");
     let voiceCallAsset = getAssetIDByName("ic_audio") ?? getAssetIDByName("PhoneCallIcon");
     const videoAsset = getAssetIDByName("video");
     const callAsset = getAssetIDByName("nav_header_connect");
+
+    console.log("📦 Asset IDs:", {
+      videoCallAsset,
+      voiceCallAsset,
+      videoAsset,
+      callAsset
+    });
 
     const UserProfileActions = findByName("UserProfileActions", false);
     const SimplifiedUserProfileContactButtons = findByName("SimplifiedUserProfileContactButtons", false);
@@ -28,7 +35,8 @@ export default {
 
     // Patch: User Profile
     patches.push(after("default", UserProfileActions, (_, comp) => {
-      console.log("Patch: UserProfileActions");
+      console.log("🧩 Patch triggered: UserProfileActions", comp);
+
       if (!storage.upHideVideoButton && !storage.upHideVoiceButton) return;
 
       let buttons = comp?.props?.children?.props?.children[1]?.props?.children ??
@@ -46,6 +54,7 @@ export default {
             }
           }
         }
+
         const icon = btn?.props?.icon;
         if ((storage.upHideVoiceButton && icon === voiceCallAsset) ||
             (storage.upHideVideoButton && icon === videoCallAsset)) {
@@ -56,7 +65,8 @@ export default {
 
     // Patch: Simplified User Profile
     patches.push(after("default", SimplifiedUserProfileContactButtons, (_, comp) => {
-      console.log("Patch: SimplifiedUserProfileContactButtons");
+      console.log("🧩 Patch triggered: SimplifiedUserProfileContactButtons", comp);
+
       const buttons = comp?.props?.children;
       if (!buttons) return;
 
@@ -66,7 +76,8 @@ export default {
 
     // Patch: Video Call (VC)
     patches.push(after("default", VideoButton, (_, comp) => {
-      console.log("Patch: VideoButton VC");
+      console.log("🧩 Patch triggered: VideoButton", comp);
+
       if (!storage.hideVCVideoButton) return;
 
       const vcButtons = comp?.props?.children?.props?.children?.props?.children;
@@ -75,7 +86,8 @@ export default {
 
     // Patch: DM Header (Tabs V2)
     patches.push(after("type", PrivateChannelButtons, (_, comp) => {
-      console.log("Patch: PrivateChannelButtons");
+      console.log("🧩 Patch triggered: PrivateChannelButtons", comp);
+
       let buttons = comp?.props?.children;
       if (!buttons) return;
 
@@ -94,7 +106,8 @@ export default {
 
     // Patch: DM Header (Legacy UI)
     patches.push(after("ChannelButtons", ChannelButtons, (_, comp) => {
-      console.log("Patch: ChannelButtons");
+      console.log("🧩 Patch triggered: ChannelButtons", comp);
+
       const buttons = comp?.props?.children;
       if (!buttons) return;
 
